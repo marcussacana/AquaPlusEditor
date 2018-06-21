@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AquaPlusEditor", "AquaPlusEditor\AquaPlusEditor.csproj", "{2F56C2BF-389B-4F52-B95D-C160D00FF7FC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APEGUI", "APEGUI\APEGUI.csproj", "{90751E5E-999B-4C03-806E-61B699907E70}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F56C2BF-389B-4F52-B95D-C160D00FF7FC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F56C2BF-389B-4F52-B95D-C160D00FF7FC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F56C2BF-389B-4F52-B95D-C160D00FF7FC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F56C2BF-389B-4F52-B95D-C160D00FF7FC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{90751E5E-999B-4C03-806E-61B699907E70}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{90751E5E-999B-4C03-806E-61B699907E70}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{90751E5E-999B-4C03-806E-61B699907E70}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{90751E5E-999B-4C03-806E-61B699907E70}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FA8E9BFE-FC2E-48EA-800E-93E1E52E17C5}
+	EndGlobalSection
+EndGlobal
