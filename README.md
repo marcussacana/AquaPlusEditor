@@ -5,7 +5,7 @@
 This tool is focused to translate the .bin files of the Utawarerumono: Itsuwari no Kamen
 
 
-Support BIN, PAK
+Support BIN, PAK, FNT
 
 Tested With: Utawarerumono: Itsuwari no Kamen
 
@@ -14,5 +14,12 @@ The repacker to PSV/PS4 format isn't tested.
 
 You don't need Encrypt the .sdat after decrypted, the game can read without encryption.
 
+The FNT is unstable, I think will works only with the Utawarerumono: Itsuwari no Kamen
+
 ## Screenshot:
+Original FNT:
+
 ![https://my.mixtape.moe/uuaqwc.jpg](https://my.mixtape.moe/uuaqwc.jpg)
+
+With custom FNT:
+![https://media.discordapp.net/attachments/322613128850440192/459543445988442127/unknown.png](https://media.discordapp.net/attachments/322613128850440192/459543445988442127/unknown.png)

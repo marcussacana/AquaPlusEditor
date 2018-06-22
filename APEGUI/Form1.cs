@@ -113,5 +113,10 @@ namespace APEGUI {
             PAK.Save(Output, Entries, BigEnddian);
             MessageBox.Show("Packget Saved");
         }
+
+        private void fntToolStripMenuItem_Click(object sender, EventArgs e) {
+            Form2 form = new Form2();
+            form.Show();
+        }
     }
 }

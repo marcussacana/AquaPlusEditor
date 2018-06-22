@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define Utawarerumono
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -63,7 +64,7 @@ namespace AquaPlusEditor {
             for (int i = 0; i < Strings.Length; i++) {
                 string Str = Strings[i];
                 Offsets.Add((uint)(StrTable.Count + WritePos));
-                StrTable.AddRange(Encoding.UTF8.GetBytes(Str.Replace("…", "鵼") + "\x0"));
+                StrTable.AddRange(Encoding.UTF8.GetBytes(Str + '\x0'));
             }
 
             byte[] Output = new byte[WritePos];
@@ -73,7 +74,8 @@ namespace AquaPlusEditor {
 
             for (int i = 0; i < Offsets.Count; i++) {
                 uint OffPos = this.OffPos[i];
-                ClearStr(Output, GetDW(OffPos));
+                if (WritePos == Script.LongLength)
+                    ClearStr(Output, GetDW(OffPos));
                 SetDW(Output, OffPos, Offsets[i]);
             }
 
@@ -113,8 +115,11 @@ namespace AquaPlusEditor {
             List<byte> Buffer = new List<byte>();
             while (Script[Offset + Buffer.Count] != 0x00)
                 Buffer.Add(Script[Offset + Buffer.Count]);
-
-            return Encoding.UTF8.GetString(Buffer.ToArray()).Replace("鵼", "…");
+#if Utawarerumono
+            return Encoding.UTF8.GetString(Buffer.ToArray()).Replace("鵼", "…");//WTF
+#else
+            return Encoding.UTF8.GetString(Buffer.ToArray());
+#endif
         }
 
         private ushort GetW(uint At) {

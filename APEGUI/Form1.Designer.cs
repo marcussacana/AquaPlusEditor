@@ -32,6 +32,7 @@
             this.repackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
+            this.fntToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -40,9 +41,10 @@
             this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.openToolStripMenuItem,
             this.saveToolStripMenuItem,
-            this.pakToolStripMenuItem});
+            this.pakToolStripMenuItem,
+            this.fntToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(104, 70);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 114);
             // 
             // openToolStripMenuItem
             // 
@@ -77,7 +79,7 @@
             // repackToolStripMenuItem
             // 
             this.repackToolStripMenuItem.Name = "repackToolStripMenuItem";
-            this.repackToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.repackToolStripMenuItem.Size = new System.Drawing.Size(112, 22);
             this.repackToolStripMenuItem.Text = "Repack";
             this.repackToolStripMenuItem.Click += new System.EventHandler(this.repackToolStripMenuItem_Click);
             // 
@@ -102,6 +104,13 @@
             this.textBox1.Size = new System.Drawing.Size(290, 20);
             this.textBox1.TabIndex = 2;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
+            // 
+            // fntToolStripMenuItem
+            // 
+            this.fntToolStripMenuItem.Name = "fntToolStripMenuItem";
+            this.fntToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fntToolStripMenuItem.Text = "Fnt";
+            this.fntToolStripMenuItem.Click += new System.EventHandler(this.fntToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -129,6 +138,7 @@
         private System.Windows.Forms.ToolStripMenuItem repackToolStripMenuItem;
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.ToolStripMenuItem fntToolStripMenuItem;
     }
 }
 
