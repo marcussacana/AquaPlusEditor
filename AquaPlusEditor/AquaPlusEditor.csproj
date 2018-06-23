@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CSTS.cs" />
+    <Compile Include="DBD.cs" />
     <Compile Include="FNT.cs" />
     <Compile Include="PAK.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

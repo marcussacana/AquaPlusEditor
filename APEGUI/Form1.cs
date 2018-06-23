@@ -11,7 +11,9 @@ namespace APEGUI {
             InitializeComponent();
         }
 
+        bool DBMode = false;
 
+        DBD DBEditor;
         CSTS ScriptEditor;
         private void extractToolStripMenuItem_Click(object sender, EventArgs e) {
             OpenFileDialog fd = new OpenFileDialog();
@@ -60,9 +62,16 @@ namespace APEGUI {
                 return;
 
             byte[] Script = File.ReadAllBytes(fd.FileName);
+            string[] Strings;
 
-            ScriptEditor = new CSTS(Script);
-            string[] Strings = ScriptEditor.Import();
+            try {
+                ScriptEditor = new CSTS(Script);
+                Strings = ScriptEditor.Import();
+            } catch {
+                DBMode = true;
+                DBEditor = new DBD(Script);
+                Strings = DBEditor.Import();
+            }
 
             listBox1.Items.Clear();
             foreach (string str in Strings)
@@ -76,7 +85,7 @@ namespace APEGUI {
                 return;
 
             string[] Strings = listBox1.Items.Cast<string>().ToArray();
-            byte[] Script = ScriptEditor.Export(Strings);
+            byte[] Script = DBMode ? DBEditor.Export(Strings) : ScriptEditor.Export(Strings);
             File.WriteAllBytes(fd.FileName, Script);
 
             MessageBox.Show("Script Saved");
