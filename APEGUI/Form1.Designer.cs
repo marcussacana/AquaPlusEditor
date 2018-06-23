@@ -30,9 +30,12 @@
             this.pakToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.repackToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.fntToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.fntToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.texToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.decodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.encodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -42,9 +45,10 @@
             this.openToolStripMenuItem,
             this.saveToolStripMenuItem,
             this.pakToolStripMenuItem,
+            this.texToolStripMenuItem,
             this.fntToolStripMenuItem});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 114);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(181, 136);
             // 
             // openToolStripMenuItem
             // 
@@ -83,6 +87,13 @@
             this.repackToolStripMenuItem.Text = "Repack";
             this.repackToolStripMenuItem.Click += new System.EventHandler(this.repackToolStripMenuItem_Click);
             // 
+            // fntToolStripMenuItem
+            // 
+            this.fntToolStripMenuItem.Name = "fntToolStripMenuItem";
+            this.fntToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.fntToolStripMenuItem.Text = "Fnt";
+            this.fntToolStripMenuItem.Click += new System.EventHandler(this.fntToolStripMenuItem_Click);
+            // 
             // listBox1
             // 
             this.listBox1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -105,12 +116,28 @@
             this.textBox1.TabIndex = 2;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
             // 
-            // fntToolStripMenuItem
+            // texToolStripMenuItem
             // 
-            this.fntToolStripMenuItem.Name = "fntToolStripMenuItem";
-            this.fntToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.fntToolStripMenuItem.Text = "Fnt";
-            this.fntToolStripMenuItem.Click += new System.EventHandler(this.fntToolStripMenuItem_Click);
+            this.texToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.decodeToolStripMenuItem,
+            this.encodeToolStripMenuItem});
+            this.texToolStripMenuItem.Name = "texToolStripMenuItem";
+            this.texToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.texToolStripMenuItem.Text = "Tex";
+            // 
+            // decodeToolStripMenuItem
+            // 
+            this.decodeToolStripMenuItem.Name = "decodeToolStripMenuItem";
+            this.decodeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.decodeToolStripMenuItem.Text = "Decode";
+            this.decodeToolStripMenuItem.Click += new System.EventHandler(this.decodeToolStripMenuItem_Click);
+            // 
+            // encodeToolStripMenuItem
+            // 
+            this.encodeToolStripMenuItem.Name = "encodeToolStripMenuItem";
+            this.encodeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.encodeToolStripMenuItem.Text = "Encode";
+            this.encodeToolStripMenuItem.Click += new System.EventHandler(this.encodeToolStripMenuItem_Click);
             // 
             // Form1
             // 
@@ -139,6 +166,9 @@
         private System.Windows.Forms.ListBox listBox1;
         private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.ToolStripMenuItem fntToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem texToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem decodeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem encodeToolStripMenuItem;
     }
 }
 

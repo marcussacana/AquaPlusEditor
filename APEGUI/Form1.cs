@@ -1,6 +1,8 @@
 ﻿using AquaPlusEditor;
 using System;
 using System.Data;
+using System.Drawing;
+using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
@@ -126,6 +128,48 @@ namespace APEGUI {
         private void fntToolStripMenuItem_Click(object sender, EventArgs e) {
             Form2 form = new Form2();
             form.Show();
+        }
+
+        private void decodeToolStripMenuItem_Click(object sender, EventArgs e) {
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Filter = "All Texture Files|*.tex";
+            if (fd.ShowDialog() != DialogResult.OK)
+                return;
+
+            Stream Text = new StreamReader(fd.FileName).BaseStream;
+            var Texture = new TEX(Text).Open();
+
+            Stream Writer = new StreamWriter(fd.FileName + ".png").BaseStream;
+            Texture.CopyTo(Writer);
+            Writer.Close();
+            Text?.Close();
+
+            MessageBox.Show("Texture Decoded");
+        }
+
+        private void encodeToolStripMenuItem_Click(object sender, EventArgs e) {
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Filter = "All Texture Files|*.tex";
+            if (fd.ShowDialog() != DialogResult.OK)
+                return;
+
+            OpenFileDialog pfd = new OpenFileDialog();
+            pfd.Filter = "All PNG Files|*.png";
+            if (pfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            SaveFileDialog sfd = new SaveFileDialog();
+            sfd.Filter = fd.Filter;
+            if (sfd.ShowDialog() != DialogResult.OK)
+                return;
+
+            Stream Text = new StreamReader(fd.FileName).BaseStream;
+            var Texture = new TEX(Text);
+            Texture.Decode();
+
+            Stream Output = new StreamWriter(sfd.FileName).BaseStream;
+            Texture.Encode(Image.FromFile(pfd.FileName) as Bitmap, Output, true);
+            Text.Close();
         }
     }
 }
