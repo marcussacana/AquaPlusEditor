@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define Utawarerumono
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,7 +28,7 @@ namespace AquaPlusEditor {
             if (StrStart == null)
                 return new string[0];
 
-            uint BlockLen = (uint)((StrStart - 4) / Count)/4;
+            uint BlockLen = (uint)((StrStart - 4) / Count) / 4;
 
 
             for (uint i = 0; i < BlockLen; i++) {
@@ -45,25 +46,28 @@ namespace AquaPlusEditor {
                 IsString.Add(IsAString);
             }
             List<uint> TablePos = new List<uint>(GetOffsets((uint)StrStart));
-            List<uint> Offsets = new List<uint>();
+            List<uint> Offsets = new List<uint>();/*
             for (uint x = 0; x < Count; x++)
                 for (int i = 0; i < BlockLen; i++) {
                     uint Ptr = x * (BlockLen * 4);
                     Ptr += (uint)(i * 4) + 4;;
+                    
+                    if (true || IsString[i]){
+                    */
+            for (uint i = 4; i < StrStart; i += 4) {
+                uint Ptr = i;
+                uint DW = GetDW(Ptr);
+                if (!TablePos.Contains(DW))
+                    continue;
 
-                    if (IsString[i]) {
-                        uint DW = GetDW(Ptr);
-                        if (!TablePos.Contains(DW))
-                            continue;
-
-                        if (!(DW >= StrStart && DW < Script.LongLength)) {
-                            continue;
-                        }
-
-                        Offsets.Add(Ptr);
-
-                    }
+                if (!(DW >= StrStart && DW < Script.LongLength)) {
+                    continue;
                 }
+
+                Offsets.Add(Ptr);
+
+            }
+        
 
             this.Offsets = Offsets.ToArray();
 
@@ -104,6 +108,34 @@ namespace AquaPlusEditor {
             return Offsets.ToArray();
         }
         private uint? GetStrTable(uint Count) {
+            try {
+                for (uint i = (uint)(Script.LongLength - (Script.LongLength % 4)) - 4; i >= 4; i -= 4) {                   
+                    if (Script[i] == 0xFF)
+                        break;
+                    if (Script[i - 1] != 0xFF && (Script[i - 1] >= 0x20 && Script[i - 1] != '\n'))
+                        continue;
+                    if (Script[i - 2] != 0xFF && (Script[i - 2] >= 0x20 && Script[i - 2] != '\n'))
+                        continue;
+                    if (Script[i] <= 0x20 && Script[i] != '\n' || Script[i] > 0xF0)
+                        continue;
+
+                    uint test = (uint)((i - 4) / Count) / 4;//fails if invalid
+
+                    uint x = i;
+                    while (Script[x] != 0x00)
+                        x++;
+                    if (Script[x + 1] == 0x00)
+                        continue;
+                    x = i;
+                    while (Script[--x] == 0x00)
+                        continue;
+                    if (!(Script[x] <= 0x20 && Script[x] != '\n' || Script[x] > 0xF0))
+                        continue;
+
+
+                        return i;
+                }
+            } catch { }
             try {
                 for (uint i = 0; i < Script.Length; i++) {
                     uint Index = (i * Count) + 4;
