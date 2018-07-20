@@ -26,9 +26,18 @@ namespace AquaPlusEditor {
         public string[] Import() {
             OffPos = new List<uint>();
             uint StrStart = (uint)Script.LongLength;
+            for (uint i = StrStart - 3; i >= 0; i--) {
+                ushort w = GetW(i);
+                if (w != 0x31)
+                    continue;
+                if (Script[i + 5] == 0 || Script[i + 4] != 0)
+                    break;
+                StrStart = i + 5;
+                break;
+            }
             for (uint i = 0; i < StrStart && i < Script.LongLength - 4; i++) {
                 ushort Word = GetW(i);
-                if (!(Word >= 0x50 && Word <= 0x53))
+                if (!(Word >= 0x50 && Word <= 0x53))//0x40 contains strings too
                     continue;
                 uint OffPos = i + 2;
                 uint Offset = GetDW(OffPos);
@@ -43,8 +52,14 @@ namespace AquaPlusEditor {
                 if (Script[Offset] == 0x00)
                     continue;
                 i += 5;
-                if (Offset < StrStart)
-                    StrStart = Offset;
+                if (Offset < StrStart) {
+                    if (StrStart == Script.Length)
+                        StrStart = Offset;
+                    else /*if (Offset + 50 >= StrStart) // hacky
+                        StrStart = Offset;
+                    else*/
+                        continue;
+                }
 
                 this.OffPos.Add(OffPos);
             }

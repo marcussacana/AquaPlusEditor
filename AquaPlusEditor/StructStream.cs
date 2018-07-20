@@ -362,6 +362,7 @@ namespace AdvancedBinary {
             object obj = new object();
             WriteField(Value, Type, Type.GetType().GetFields()[0], ref obj);
         }
+		
         internal void WriteField(dynamic Value, string Type, FieldInfo field, ref object Instance) {
             switch (Type) {
                 case Const.STRING:
