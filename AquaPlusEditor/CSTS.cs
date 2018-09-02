@@ -25,7 +25,8 @@ namespace AquaPlusEditor {
 
         public string[] Import() {
             OffPos = new List<uint>();
-            uint StrStart = (uint)Script.LongLength;
+            uint StrStart = GetWritePos();
+            bool ForceTable = StrStart != Script.LongLength;
             for (uint i = StrStart - 3; i >= 0; i--) {
                 ushort w = GetW(i);
                 if (w != 0x31)
@@ -53,12 +54,21 @@ namespace AquaPlusEditor {
                     continue;
                 i += 5;
                 if (Offset < StrStart) {
+                    if (ForceTable)
+                        continue;
+
                     if (StrStart == Script.Length)
                         StrStart = Offset;
                     else /*if (Offset + 50 >= StrStart) // hacky
                         StrStart = Offset;
-                    else*/
-                        continue;
+                    else*/ {
+                        byte Prefix = Script[Offset];
+                        //https://en.wikipedia.org/wiki/UTF-8
+                        if ((Prefix >> 4 == 0xE && ((Prefix & 0xF) >= 0x3 && (Prefix & 0xF) <= 8) ) || Prefix == 0xC3 || (Prefix >= 0x41 && Prefix <= 0x7A)) {
+                            StrStart = Offset;
+                        } else
+                            continue;
+                    }
                 }
 
                 this.OffPos.Add(OffPos);
