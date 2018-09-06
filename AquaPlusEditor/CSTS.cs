@@ -26,7 +26,6 @@ namespace AquaPlusEditor {
         public string[] Import() {
             OffPos = new List<uint>();
             uint StrStart = GetWritePos();
-            bool ForceTable = StrStart != Script.LongLength;
             for (uint i = StrStart - 3; i >= 0; i--) {
                 ushort w = GetW(i);
                 if (w != 0x31)
@@ -36,7 +35,8 @@ namespace AquaPlusEditor {
                 StrStart = i + 5;
                 break;
             }
-            for (uint i = 0; i < StrStart && i < Script.LongLength - 4; i++) {
+            bool ForceTable = StrStart != Script.LongLength;
+            for (uint i = 0; i < Script.LongLength - 2; i++) {
                 ushort Word = GetW(i);
                 if (!(Word >= 0x50 && Word <= 0x53))//0x40 contains strings too
                     continue;
@@ -53,7 +53,9 @@ namespace AquaPlusEditor {
                 if (Script[Offset] == 0x00)
                     continue;
                 i += 5;
-                if (Offset < StrStart && !ForceTable) {
+                if (Offset < StrStart) {
+                    if (ForceTable)
+                        continue;
 
                     if (StrStart == Script.Length)
                         StrStart = Offset;
@@ -62,12 +64,13 @@ namespace AquaPlusEditor {
                     else*/ {
                         byte Prefix = Script[Offset];
                         //https://en.wikipedia.org/wiki/UTF-8
-                        if ((Prefix >> 4 == 0xE && ((Prefix & 0xF) >= 0x3 && (Prefix & 0xF) <= 8) ) || Prefix == 0xC3 || (Prefix >= 0x41 && Prefix <= 0x7A)) {
+                        if ((Prefix >> 4 == 0xE && ((Prefix & 0xF) >= 0x3 && (Prefix & 0xF) <= 8)) || Prefix == 0xC3 || (Prefix >= 0x41 && Prefix <= 0x7A)) {
                             StrStart = Offset;
                         } else
                             continue;
                     }
-                }
+                } else if (Offset < StrStart)
+                    continue;
 
                 this.OffPos.Add(OffPos);
             }
