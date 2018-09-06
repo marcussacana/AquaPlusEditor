@@ -53,9 +53,7 @@ namespace AquaPlusEditor {
                 if (Script[Offset] == 0x00)
                     continue;
                 i += 5;
-                if (Offset < StrStart) {
-                    if (ForceTable)
-                        continue;
+                if (Offset < StrStart && !ForceTable) {
 
                     if (StrStart == Script.Length)
                         StrStart = Offset;
