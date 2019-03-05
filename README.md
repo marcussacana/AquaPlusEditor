@@ -19,7 +19,7 @@ The FNT is unstable, I think will works only with the Utawarerumono: Itsuwari no
 ## Screenshot:
 Original FNT:
 
-![https://my.mixtape.moe/uuaqwc.jpg](https://my.mixtape.moe/uuaqwc.jpg)
+![http://web.archive.org/web/20190304203349if_/https://track9.mixtape.moe/uuaqwc.jpg](http://web.archive.org/web/20190304203349if_/https://track9.mixtape.moe/uuaqwc.jpg)
 
 With custom FNT:
 ![https://media.discordapp.net/attachments/322613128850440192/459543445988442127/unknown.png](https://media.discordapp.net/attachments/322613128850440192/459543445988442127/unknown.png)
