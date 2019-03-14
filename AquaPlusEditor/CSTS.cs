@@ -9,7 +9,7 @@ namespace AquaPlusEditor {
         const uint Signature = 0x43535453;
         bool IsBigEnddian = false;
        
-        List<uint> OffPos;
+        public List<uint> OffPos;
         byte[] Script;
 
         private byte[] EditorSignature = new byte[] { 0x00, 0x45, 0x64, 0x69, 0x74, 0x65, 0x64, 0x20, 0x57, 0x69, 0x74, 0x68, 0x20, 0x41, 0x71, 0x75, 0x61, 0x50, 0x6C, 0x75, 0x73, 0x45, 0x64, 0x69, 0x74, 0x6F, 0x72, 0x00 };
@@ -90,7 +90,8 @@ namespace AquaPlusEditor {
             for (int i = 0; i < Strings.Length; i++) {
                 string Str = Strings[i];
                 Offsets.Add((uint)(StrTable.Count + WritePos));
-                StrTable.AddRange(Encoding.UTF8.GetBytes(Str + '\x0'));
+                StrTable.AddRange(Encoding.UTF8.GetBytes(Str));
+                StrTable.Add(0x00);
             }
 
             byte[] Output = new byte[WritePos];
@@ -98,10 +99,12 @@ namespace AquaPlusEditor {
                 Output[i] = Script[i];
             }
 
-            for (int i = 0; i < Offsets.Count; i++) {
+            for (int i = 0; i < OffPos.Count; i++) {
                 uint OffPos = this.OffPos[i];
                 if (WritePos == Script.LongLength)
                     ClearStr(Output, GetDW(OffPos));
+                //if (i > 0 && StrTable[((int)Offsets[i] - Output.Length)-1] != 0x00)
+                //    System.Diagnostics.Debugger.Break();
                 SetDW(Output, OffPos, Offsets[i]);
             }
 

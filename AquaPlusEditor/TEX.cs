@@ -13,7 +13,9 @@ namespace AquaPlusEditor {
         Size TexSize;
         bool? IsBigEnddian = null;
         Stream Texture;
-        uint Unk;
+        uint Flags;
+
+        bool Tiled => ((Flags >> 8 * 2) & 0xFF) == 0x3;
         public TEX(Stream Texture) {
             this.Texture = Texture;
         }
@@ -22,7 +24,7 @@ namespace AquaPlusEditor {
             IsBigEnddian = BigEnddian;
         }
 
-        public Stream Open() {
+        Stream Open() {
             if (IsBigEnddian == null) {
                 byte[] DW = new byte[4];
                 Texture.Seek(8, 0);
@@ -32,7 +34,7 @@ namespace AquaPlusEditor {
             Texture.Seek(0, 0);
             StructReader Reader = new StructReader(Texture, (bool)IsBigEnddian);
             Reader.Seek(0xC, 0);
-            Unk = Reader.ReadRawType(Const.UINT32);
+            Flags = Reader.ReadRawType(Const.UINT32);
             uint PNGLen = Reader.ReadRawType(Const.UINT32);
             uint Width = Reader.ReadRawType(Const.UINT32);
             uint Height = Reader.ReadRawType(Const.UINT32);
@@ -40,20 +42,81 @@ namespace AquaPlusEditor {
             TexSize = new Size((int)Width, (int)Height);
             return new VirtStream(Texture, 0x1C, PNGLen);
         }
+
         public Bitmap Decode() {
             Bitmap Output = Image.FromStream(Open()) as Bitmap;
             TexSize = Output.Size;
+
+
+            if (Tiled)
+                Output = Untile(Output);
+
             return Output;
         }
+
+        public static Bitmap Untile(Bitmap Picture) {
+            Bitmap Result = new Bitmap(Picture.Width, Picture.Height, PixelFormat.Format32bppArgb);
+            Point[] ZMap = GenZMap((ulong)Picture.Width * (ulong)Picture.Height);
+            ulong ZIndex = 0;
+            for (int y = 0; y < Result.Height; y++)
+                for (int x = 0; x < Result.Width; x++) {
+                    Point ZPos = ZMap[ZIndex++];
+                    Result.SetPixel(ZPos.X, ZPos.Y, Picture.GetPixel(x, y));
+                }
+            return Result;
+
+        }
+        public static Bitmap Retile(Bitmap Picture) {
+            Bitmap Result = new Bitmap(Picture.Width, Picture.Height, PixelFormat.Format32bppArgb);
+            Point[] ZMap = GenZMap((ulong)Picture.Width * (ulong)Picture.Height);
+            ulong ZIndex = 0;
+            for (int y = 0; y < Result.Height; y++)
+                for (int x = 0; x < Result.Width; x++) {
+                    Point ZPos = ZMap[ZIndex++];
+                    Result.SetPixel(x, y, Picture.GetPixel(ZPos.X, ZPos.Y));
+                }
+            return Result;
+
+        }
+
+        static uint Morton1(ulong x) {
+            x = x & 0x5555555555555555;
+            x = (x | (x >> 1)) & 0x3333333333333333;
+            x = (x | (x >> 2)) & 0x0F0F0F0F0F0F0F0F;
+            x = (x | (x >> 4)) & 0x00FF00FF00FF00FF;
+            x = (x | (x >> 8)) & 0x0000FFFF0000FFFF;
+            x = (x | (x >> 16)) & 0x00000000FFFFFFFF;
+            return (uint)x;
+        }
+
+        static Point GetMorton(ulong index) {
+            int x = (int)Morton1(index);
+            int y = (int)Morton1(index >> 1);
+
+            return new Point(x, y);
+        }
+        static Point[] GenZMap(ulong Count) {
+            List<Point> Map = new List<Point>();
+            for (ulong n = 0; n < Count; n++) {
+
+                Map.Add(GetMorton(n));
+            }
+            return Map.ToArray();
+        }
+
 
         public void Encode(Bitmap Texture, Stream Output, bool CloseStreams = true) {
             StructWriter Writer = new StructWriter(Output, (bool)IsBigEnddian);
             Writer.Write(0x2065727574786554);
             Writer.Write(0);//0x8, blocklen
-            Writer.WriteRawType(Const.UINT32, Unk);
+            Writer.WriteRawType(Const.UINT32, Flags);
             Writer.Write(0);//0x10, pnglen
             Writer.WriteRawType(Const.UINT32, (uint)TexSize.Width);
             Writer.WriteRawType(Const.UINT32, (uint)TexSize.Height);
+
+            if (Tiled)
+                Texture = Retile(Texture);
+
             Texture.Save(Writer.BaseStream, ImageFormat.Png);
             uint BlockLen = (uint)Writer.BaseStream.Position;
             uint PngLen = BlockLen - 0x1C;
@@ -72,8 +135,8 @@ namespace AquaPlusEditor {
 
             while (Reader.BaseStream.Position % 4 != 0)
                 Reader.ReadByte();
-
-            Reader.BaseStream.CopyTo(Reader.BaseStream);
+            
+            Reader.BaseStream.CopyTo(Writer.BaseStream);
             Writer.Flush();
 
             if (CloseStreams) {

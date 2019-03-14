@@ -137,12 +137,9 @@ namespace APEGUI {
                 return;
 
             Stream Text = new StreamReader(fd.FileName).BaseStream;
-            var Texture = new TEX(Text).Open();
+            var Texture = new TEX(Text).Decode();
 
-            Stream Writer = new StreamWriter(fd.FileName + ".png").BaseStream;
-            Texture.CopyTo(Writer);
-            Writer.Close();
-            Text?.Close();
+            Texture.Save(fd.FileName + ".png", ImageFormat.Png);
 
             MessageBox.Show("Texture Decoded");
         }
@@ -171,5 +168,51 @@ namespace APEGUI {
             Texture.Encode(Image.FromFile(pfd.FileName) as Bitmap, Output, true);
             Text.Close();
         }
+
+        private void untilerToolStripMenuItem_Click(object sender, EventArgs e) {
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Filter = "All PNG Files|*.png";
+            if (fd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var Bitmap = Image.FromFile(fd.FileName) as Bitmap;
+            var Rst = TEX.Untile(Bitmap);
+            Rst.Save(fd.FileName + "_untiled.png", ImageFormat.Png);
+
+            MessageBox.Show("Texture Untiled");
+        }
+        private void retilerToolStripMenuItem_Click(object sender, EventArgs e) {
+            OpenFileDialog fd = new OpenFileDialog();
+            fd.Filter = "All PNG Files|*.png";
+            if (fd.ShowDialog() != DialogResult.OK)
+                return;
+
+            var Bitmap = Image.FromFile(fd.FileName) as Bitmap;
+            var Rst = TEX.Retile(Bitmap);
+            Rst.Save(fd.FileName + "_tiled.png", ImageFormat.Png);
+
+            MessageBox.Show("Texture Retiled");
+
+        }
+
+        private void assertToolStripMenuItem_Click(object sender, EventArgs e) {
+            OpenFileDialog fd = new OpenFileDialog();
+            if (fd.ShowDialog() != DialogResult.OK)
+                return;
+            string jap = fd.FileName;
+            if (fd.ShowDialog() != DialogResult.OK)
+                return;
+            string en = fd.FileName;
+
+            CSTS open = new CSTS(File.ReadAllBytes(jap));
+            var rst = open.Import();
+            uint[] Offsets = open.OffPos.ToArray();
+            open = new CSTS(File.ReadAllBytes(en));
+            open.Import();
+            uint[] NOffsets = open.OffPos.ToArray();
+            uint[] Misssing = (from x in Offsets where !NOffsets.Contains(x) select x).ToArray();
+
+        }
+
     }
 }
