@@ -16,7 +16,7 @@ You don't need Encrypt the .sdat after decrypted, the game can read without encr
 
 The FNT is unstable, I think will works only with the Utawarerumono: Itsuwari no Kamen
 
-This tool can't edit the .tex files from the Steam version
+This tool can't edit the .tex files from the Steam version  
 (LZ77 Algorithm outdated, if someone give-me a complete implementation of the LZ77 in C# I can add support)
 
 ## Screenshot:
