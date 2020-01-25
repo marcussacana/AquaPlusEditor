@@ -1,4 +1,5 @@
 ﻿using AdvancedBinary;
+using libWiiSharp;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -16,6 +17,7 @@ namespace AquaPlusEditor {
         uint Flags;
 
         bool Tiled => ((Flags >> 8 * 2) & 0xFF) == 0x3;
+        bool Compressed => ((Flags >> 8 * 2) & 0xFF) == 0x6;
         public TEX(Stream Texture) {
             this.Texture = Texture;
         }
@@ -44,9 +46,22 @@ namespace AquaPlusEditor {
         }
 
         public Bitmap Decode() {
-            Bitmap Output = Image.FromStream(Open()) as Bitmap;
-            TexSize = Output.Size;
+            MemoryStream Stream = new MemoryStream();
+            Open().CopyTo(Stream);
 
+            if (Compressed) {
+                var Decompressed = new MemoryStream();
+                var Decompressor = new Lz77();
+                Decompressor.Decompress(Stream).CopyTo(Decompressed);
+
+                Stream.Close();
+                Stream = Decompressed;
+            }
+
+            Bitmap Output = Image.FromStream(Stream) as Bitmap;
+            Stream.Close();
+
+            TexSize = Output.Size;
 
             if (Tiled)
                 Output = Untile(Output);

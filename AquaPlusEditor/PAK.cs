@@ -9,30 +9,48 @@ namespace AquaPlusEditor
 {
     public static class PAK
     {
-        public static Entry[] Open(Stream Packget) => Open(Packget, null);
-        public static Entry[] Open(Stream Packget, bool? BigEnddian) {
+        const uint NameSize = 8;
+        const uint ExNameSize = 12;
+        public static Entry[] Open(Stream Packget) => Open(Packget, null, null);
+        public static Entry[] Open(Stream Package, bool? BigEnddian, bool? SteamVersion) {
+            if (SteamVersion == null) {
+                Package.Seek(NameSize, 0);
+                byte[] Buff = new byte[4];
+                Package.Read(Buff, 0, Buff.Length);
+                uint DW = BitConverter.ToUInt32(Buff, 0);
+
+                SteamVersion = DW == 0x20202020;
+            }
+            
+            uint HeaderSize = (SteamVersion.Value ? ExNameSize : NameSize) + 4;
+
             if (BigEnddian == null) {
-                Packget.Seek(8, 0);
+                Package.Seek((SteamVersion.Value ? ExNameSize : NameSize), 0);
 
                 byte[] Buff = new byte[4];
-                Packget.Read(Buff, 0, Buff.Length);
+                Package.Read(Buff, 0, Buff.Length);
                 int Len = BitConverter.ToInt32(Buff, 0);
 
-                if (Len < 0 || Len > Packget.Length)
+                if (Len < 0 || Len > Package.Length)
                     BigEnddian = true;
                 else
                     BigEnddian = false;
             }
 
-            Packget.Seek(0, 0);
-            StructReader Reader = new StructReader(Packget, (bool)BigEnddian);
-            Reader.Seek(0x8, 0);
+            Package.Seek(0, 0);
+            StructReader Reader = new StructReader(Package, (bool)BigEnddian);
+            Reader.Seek((SteamVersion.Value ? ExNameSize : NameSize), 0);
             uint SectionLen = Reader.ReadRawType(Const.UINT32);
             uint Count = Reader.ReadRawType(Const.UINT32) / 4;
-            Reader.Seek(0xC, 0);
+            Reader.Seek(-4, SeekOrigin.Current);
+
+            SectionLen -= HeaderSize;
+
+            while (SteamVersion.Value && SectionLen % 0x10 != 0)
+                SectionLen++;
 
             Section Section = new Section();
-            Section.Data = Reader.ReadBytes((int)SectionLen - 0xC);
+            Section.Data = Reader.ReadBytes((int)SectionLen);
 
 
             Entry[] Entries = new Entry[Count];
@@ -41,26 +59,37 @@ namespace AquaPlusEditor
                 Entries[i].Filename = GetStringAt(Section.Data, Section[i, (bool)BigEnddian]);
             }
 
-            while (Reader.BaseStream.Position % 4 != 0)
+            while (Reader.BaseStream.Position %  (SteamVersion.Value ? 0x10 : 4) != 0)
                 Reader.ReadByte();
 
-            Reader.Seek(8, SeekOrigin.Current);
+            Reader.Seek((SteamVersion.Value ? ExNameSize : NameSize), SeekOrigin.Current);
             SectionLen = Reader.ReadRawType(Const.UINT32) + 4;
             Reader.ReadUInt32();//entrycount
+
+            if (SteamVersion.Value)
+                SectionLen -= HeaderSize + 4;
+
+            while (SteamVersion.Value && (SectionLen + (SteamVersion.Value ? 4 : 0)) % 0x10 != 0)
+                SectionLen++;
+
             Section.Data = Reader.ReadBytes((int)SectionLen);
 
             for (uint i = 0; i < Entries.Length; i++) {
-                VirtStream Stream = new VirtStream(Packget, Section[(i*2), (bool)BigEnddian], Section[(i * 2)+1, (bool)BigEnddian]);
+                VirtStream Stream = new VirtStream(Package, Section[(i*2), (bool)BigEnddian], Section[(i * 2)+1, (bool)BigEnddian]);
                 Entries[i].Content = Stream;
             }
 
             return Entries;
         }
 
-        public static void Save(Stream Output, Entry[] Content, bool BigEnddian, bool CloseStreams = true) {
+        public static void Save(Stream Output, Entry[] Content, bool BigEnddian, bool SteamVer, bool CloseStreams = true) {
             StructWriter Writer = new StructWriter(Output, BigEnddian);
             Writer.Write(0x656D616E656C6946u);//"Filename"
-            Writer.Write(0);//SecEnd
+
+            if (SteamVer)
+                Writer.Write(0x20202020);
+
+            Writer.Write(0);//Section Length
 
             long BasePos = (uint)Content.LongLength * 4;
             List<byte> NameBuffer = new List<byte>();
@@ -72,18 +101,21 @@ namespace AquaPlusEditor
             Writer.Write(NameBuffer.ToArray(), 0, NameBuffer.Count);
 
             long Pos = Writer.BaseStream.Position;
-            Writer.Seek(0x8, 0);
+            Writer.Seek(SteamVer ? 12 : 8, 0);
             Writer.WriteRawType(Const.UINT32, (uint)Pos);
             Writer.Seek(Pos, 0);
 
 
-            while (Writer.BaseStream.Position % 4 != 0)
+            while (Writer.BaseStream.Position % (SteamVer ? 0x10 : 4) != 0)
                 Writer.Write((byte)0x00);
 
             long PackStart = Writer.BaseStream.Position;
             Writer.Write(0x202020206B636150u);//"Pack    "
+            if (SteamVer)
+                Writer.Write(0x20202020);
+
             Pos = Writer.BaseStream.Position;
-            Writer.Write(0);//SecEnd
+            Writer.Write(0);//Section Length
 
             Writer.WriteRawType(Const.UINT32, (uint)Content.LongLength);
 

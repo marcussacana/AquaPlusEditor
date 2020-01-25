@@ -35,10 +35,10 @@
             this.decodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.encodeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.untilerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.retilerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.fntToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.listBox1 = new System.Windows.Forms.ListBox();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.retilerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -65,7 +65,7 @@
             // assertToolStripMenuItem
             // 
             this.assertToolStripMenuItem.Name = "assertToolStripMenuItem";
-            this.assertToolStripMenuItem.Size = new System.Drawing.Size(106, 22);
+            this.assertToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.assertToolStripMenuItem.Text = "Assert";
             this.assertToolStripMenuItem.Click += new System.EventHandler(this.assertToolStripMenuItem_Click);
             // 
@@ -113,23 +113,30 @@
             // decodeToolStripMenuItem
             // 
             this.decodeToolStripMenuItem.Name = "decodeToolStripMenuItem";
-            this.decodeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.decodeToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.decodeToolStripMenuItem.Text = "Decode";
             this.decodeToolStripMenuItem.Click += new System.EventHandler(this.decodeToolStripMenuItem_Click);
             // 
             // encodeToolStripMenuItem
             // 
             this.encodeToolStripMenuItem.Name = "encodeToolStripMenuItem";
-            this.encodeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.encodeToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.encodeToolStripMenuItem.Text = "Encode";
             this.encodeToolStripMenuItem.Click += new System.EventHandler(this.encodeToolStripMenuItem_Click);
             // 
             // untilerToolStripMenuItem
             // 
             this.untilerToolStripMenuItem.Name = "untilerToolStripMenuItem";
-            this.untilerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.untilerToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
             this.untilerToolStripMenuItem.Text = "Untiler";
             this.untilerToolStripMenuItem.Click += new System.EventHandler(this.untilerToolStripMenuItem_Click);
+            // 
+            // retilerToolStripMenuItem
+            // 
+            this.retilerToolStripMenuItem.Name = "retilerToolStripMenuItem";
+            this.retilerToolStripMenuItem.Size = new System.Drawing.Size(114, 22);
+            this.retilerToolStripMenuItem.Text = "Retiler";
+            this.retilerToolStripMenuItem.Click += new System.EventHandler(this.retilerToolStripMenuItem_Click);
             // 
             // fntToolStripMenuItem
             // 
@@ -159,13 +166,6 @@
             this.textBox1.Size = new System.Drawing.Size(452, 20);
             this.textBox1.TabIndex = 2;
             this.textBox1.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.textBox1_KeyPress);
-            // 
-            // retilerToolStripMenuItem
-            // 
-            this.retilerToolStripMenuItem.Name = "retilerToolStripMenuItem";
-            this.retilerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.retilerToolStripMenuItem.Text = "Retiler";
-            this.retilerToolStripMenuItem.Click += new System.EventHandler(this.retilerToolStripMenuItem_Click);
             // 
             // Form1
             // 

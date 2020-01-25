@@ -106,7 +106,8 @@ namespace APEGUI {
             if (fd.ShowDialog() != DialogResult.OK)
                 return;
 
-            bool BigEnddian = MessageBox.Show("Pack with BigEnddian?\nYes: PS3 Format\nNo: PSV/PS4 Format", "APEGUI", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+            bool SteamVer = MessageBox.Show("Pack in Steam version format?", "APEGUI", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+            bool BigEnddian = !SteamVer && MessageBox.Show("Pack with BigEnddian?\nYes: PS3 Format\nNo: PSV/PS4 Format", "APEGUI", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
 
             if (!fbd.SelectedPath.EndsWith("\\"))
                 fbd.SelectedPath += '\\';
@@ -121,7 +122,7 @@ namespace APEGUI {
 
             Stream Output = new StreamWriter(fd.FileName).BaseStream;
 
-            PAK.Save(Output, Entries, BigEnddian);
+            PAK.Save(Output, Entries, BigEnddian, SteamVer);
             MessageBox.Show("Packget Saved");
         }
 
@@ -213,6 +214,5 @@ namespace APEGUI {
             uint[] Misssing = (from x in Offsets where !NOffsets.Contains(x) select x).ToArray();
 
         }
-
     }
 }
