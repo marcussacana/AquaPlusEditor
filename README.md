@@ -24,6 +24,8 @@ This tool can't edit the .tex files from the Steam version
 
 ## Executable Patches:
 
+**Format**:
+- *Modification*: "**Patch Address**" (**Default Value**, **Patched Value**)
 
 **Utawarerumono - Mask of Deception [Steam]** (**1149550**):
 
