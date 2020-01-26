@@ -1,4 +1,5 @@
 
+
 ## AquaPlusEditor - v2.0
 [![Build Status](https://travis-ci.org/ForumHulp/pageaddon.svg?branch=master)](http://vnx.uvnworks.com)
 
@@ -27,6 +28,7 @@ This tool can't edit the .tex files from the Steam version
 **Format**:
 - *Modification*: "**Patch Address**" (**Default Value**, **Patched Value**)
 
+---
 **Utawarerumono - Mask of Deception [Steam]** (**1149550**):
 
 - *Allways use FNT font*: **0xB6206** (Default: **0x74**, **0xEB**)
