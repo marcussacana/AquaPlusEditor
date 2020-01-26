@@ -32,7 +32,7 @@ This tool can't edit the .tex files from the Steam version
 ---
 **Utawarerumono - Mask of Truth [Steam]** (**1151440**):
 
-- *Half Screen Char Limit*: **0xD73BD** (Default: **0x74**, **0xEB**)
+- *Allways use FNT font*: **0xD73BD** (Default: **0x74**, **0xEB**)
 
 ---
 
