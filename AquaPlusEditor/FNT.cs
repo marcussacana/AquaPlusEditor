@@ -61,7 +61,7 @@ namespace AquaPlusEditor {
                 byte[] Buffer = new byte[4];
                 Reader.Read(Buffer, 0, Buffer.Length);
                 if (!(bool)BigEnddian)
-                    Buffer = Buffer.Reverse().ToArray();
+                    Array.Reverse(Buffer);
                 List<byte> Buff = new List<byte>();
                 for (int x = 0, y = 0; x < Buffer.Length; x++) {
                     if (y == 0) {
@@ -90,14 +90,11 @@ namespace AquaPlusEditor {
 
             TexturePos = Reader.BaseStream.Position;
             int TexHeaderSize = 0x14 + (int)HeaderNameSize;
-            Reader.Seek(HeaderNameSize, SeekOrigin.Current);
-            long TexLen = (long)Reader.ReadRawType(Const.UINT32) - (TexturePos+TexHeaderSize);
+            Reader.Seek(HeaderNameSize + 8, SeekOrigin.Current);
+            long TexLen = (long)Reader.ReadRawType(Const.UINT32);
 
-            if (SteamVer.Value)
-            {
-                Reader.Seek(8, SeekOrigin.Current);
+            if (SteamVer.Value)            
                 TexLen = (long)Reader.ReadRawType(Const.UINT32);
-            }
 
             VirtStream Stream = new VirtStream(Reader.BaseStream, TexturePos + TexHeaderSize, TexLen);
             if (SteamVer.Value)

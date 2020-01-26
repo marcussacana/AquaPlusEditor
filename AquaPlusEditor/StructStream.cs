@@ -31,9 +31,10 @@ namespace AdvancedBinary {
     /// </summary>
     /// <param name="Stream">Stream Instance</param>
     /// <param name="FromReader">Determine if the method is invoked from the StructReader or StructWriter</param>
+    /// <param name="BigEndian">Determine if the Stream Struct is in the BigEndian Mode</param>
     /// <param name="StructInstance">Struct instance reference</param>
     /// <return>New Struct Instance</return>
-    public delegate dynamic FieldInvoke(Stream Stream, bool FromReader, dynamic StructInstance);
+    public delegate dynamic FieldInvoke(Stream Stream, bool FromReader, bool BigEndian, dynamic StructInstance);
 
     /// <summary>
     /// Ignore Struct Field
@@ -266,7 +267,7 @@ namespace AdvancedBinary {
 
     public class StructWriter : BinaryWriter {
 
-        internal bool BigEndian = false;
+        public bool BigEndian { get; private set; } = false;
         internal Encoding Encoding;
 
         public StructWriter(Stream Output, bool BigEndian = false, Encoding Encoding = null) : base(Output) {
@@ -393,7 +394,7 @@ namespace AdvancedBinary {
                             FieldInvoke Invoker = ((FieldInvoke)Value);
                             if (Invoker == null)
                                 break;
-                            Instance = Invoker.Invoke(BaseStream, false, Instance);
+                            Instance = Invoker.Invoke(BaseStream, false, BigEndian, Instance);
                             field.SetValue(Instance, Invoker);
                         } else if (BigEndian)
                             Write(Tools.Reverse(Value));
@@ -504,7 +505,7 @@ namespace AdvancedBinary {
 
     class StructReader : BinaryReader {
 
-        internal bool BigEndian = false;
+        public bool BigEndian { get; private set; } = false;
         internal Encoding Encoding;
         public StructReader(Stream Input, bool BigEndian = false, Encoding Encoding = null) : base(Input) {
             if (Encoding == null)
@@ -684,7 +685,7 @@ namespace AdvancedBinary {
                             Value = Invoker;
                             if (Invoker == null)
                                 break;
-                            Instance = Invoker.Invoke(BaseStream, true, Instance);
+                            Instance = Invoker.Invoke(BaseStream, true, BigEndian, Instance);
                             break;
                         }
                         throw new Exception("Unk Struct Field: " + field.FieldType.ToString());

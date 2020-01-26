@@ -24,7 +24,10 @@ namespace APEGUI {
                 return;
 
             Stream Packget = new StreamReader(fd.FileName).BaseStream;
+
             string Outdir = fd.FileName + "~\\";
+            Outdir = Outdir.Replace('\\', Path.AltDirectorySeparatorChar);
+
             if (Directory.Exists(Outdir))
                 Directory.Delete(Outdir, true);
             Directory.CreateDirectory(Outdir);
@@ -33,7 +36,7 @@ namespace APEGUI {
 
             foreach (var File in Entries) {
                 string OP = Outdir + File.Filename;
-                Stream Output = new StreamWriter(OP).BaseStream;
+                Stream Output = new StreamWriter(OP.Replace('\\', Path.AltDirectorySeparatorChar)).BaseStream;
                 File.Content.CopyTo(Output);
                 Output.Flush();
                 Output.Close();
@@ -112,9 +115,9 @@ namespace APEGUI {
             if (!fbd.SelectedPath.EndsWith("\\"))
                 fbd.SelectedPath += '\\';
 
-            string[] Files = Directory.GetFiles(fbd.SelectedPath, "*.*");
+            string[] Files = Directory.GetFiles(fbd.SelectedPath.Replace('\\', Path.AltDirectorySeparatorChar), "*.*");
 
-            Entry[] Entries = (from x in Files
+            Entry[] Entries = (from x in Files orderby x
                                select new Entry() {
                                    Filename = x.Substring(fbd.SelectedPath.Length),
                                    Content = new StreamReader(x).BaseStream

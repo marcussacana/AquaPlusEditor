@@ -12,8 +12,10 @@ namespace AquaPlusEditor
         const uint NameSize = 8;
         const uint ExNameSize = 12;
         public static Entry[] Open(Stream Packget) => Open(Packget, null, null);
-        public static Entry[] Open(Stream Package, bool? BigEnddian, bool? SteamVersion) {
-            if (SteamVersion == null) {
+        public static Entry[] Open(Stream Package, bool? BigEndian, bool? SteamVersion)
+        {
+            if (SteamVersion == null)
+            {
                 Package.Seek(NameSize, 0);
                 byte[] Buff = new byte[4];
                 Package.Read(Buff, 0, Buff.Length);
@@ -21,10 +23,11 @@ namespace AquaPlusEditor
 
                 SteamVersion = DW == 0x20202020;
             }
-            
+
             uint HeaderSize = (SteamVersion.Value ? ExNameSize : NameSize) + 4;
 
-            if (BigEnddian == null) {
+            if (BigEndian == null)
+            {
                 Package.Seek((SteamVersion.Value ? ExNameSize : NameSize), 0);
 
                 byte[] Buff = new byte[4];
@@ -32,124 +35,163 @@ namespace AquaPlusEditor
                 int Len = BitConverter.ToInt32(Buff, 0);
 
                 if (Len < 0 || Len > Package.Length)
-                    BigEnddian = true;
+                    BigEndian = true;
                 else
-                    BigEnddian = false;
+                    BigEndian = false;
             }
 
             Package.Seek(0, 0);
-            StructReader Reader = new StructReader(Package, (bool)BigEnddian);
-            Reader.Seek((SteamVersion.Value ? ExNameSize : NameSize), 0);
-            uint SectionLen = Reader.ReadRawType(Const.UINT32);
-            uint Count = Reader.ReadRawType(Const.UINT32) / 4;
-            Reader.Seek(-4, SeekOrigin.Current);
+            StructReader Reader = new StructReader(Package, (bool)BigEndian);
 
-            SectionLen -= HeaderSize;
+            object Section = SteamVersion.Value ? (object)new SteamSection() : new Section();
+            ((dynamic)Section).Event = new FieldInvoke(SectionEvent);
+            Reader.ReadStruct(SteamVersion.Value ? typeof(SteamSection) : typeof(Section), ref Section);
 
-            while (SteamVersion.Value && SectionLen % 0x10 != 0)
-                SectionLen++;
+            byte[] Data = ((dynamic)Section).Data;
 
-            Section Section = new Section();
-            Section.Data = Reader.ReadBytes((int)SectionLen);
+            Entry[] Entries = new Entry[(GetDWAt(Data, 0, BigEndian.Value) / 4)];
 
-
-            Entry[] Entries = new Entry[Count];
-            for (uint i = 0; i < Entries.Length; i++) {
+            for (uint i = 0; i < Entries.Length; i++)
+            {
                 Entries[i] = new Entry();
-                Entries[i].Filename = GetStringAt(Section.Data, Section[i, (bool)BigEnddian]);
+                uint Offset = GetDWAt(Data, i, BigEndian.Value);
+                Entries[i].Filename = GetStringAt(Data, Offset);
             }
 
-            while (Reader.BaseStream.Position %  (SteamVersion.Value ? 0x10 : 4) != 0)
+            Reader.BaseStream.Position = Data.LongLength + HeaderSize;
+
+            while (Reader.BaseStream.Position % (SteamVersion.Value ? 8 : 4) != 0)
                 Reader.ReadByte();
 
-            Reader.Seek((SteamVersion.Value ? ExNameSize : NameSize), SeekOrigin.Current);
-            SectionLen = Reader.ReadRawType(Const.UINT32) + 4;
-            Reader.ReadUInt32();//entrycount
+            Reader.ReadStruct(SteamVersion.Value ? typeof(SteamSection) : typeof(Section), ref Section);
+            Data = ((dynamic)Section).Data;
 
-            if (SteamVersion.Value)
-                SectionLen -= HeaderSize + 4;
+            for (uint i = 0; i < Entries.Length; i++)
+            {
+                uint Offset = GetDWAt(Data, 1 + (i * 2) + 0, BigEndian.Value);
+                uint Length = GetDWAt(Data, 1 + (i * 2) + 1, BigEndian.Value);
 
-            while (SteamVersion.Value && (SectionLen + (SteamVersion.Value ? 4 : 0)) % 0x10 != 0)
-                SectionLen++;
-
-            Section.Data = Reader.ReadBytes((int)SectionLen);
-
-            for (uint i = 0; i < Entries.Length; i++) {
-                VirtStream Stream = new VirtStream(Package, Section[(i*2), (bool)BigEnddian], Section[(i * 2)+1, (bool)BigEnddian]);
+                VirtStream Stream = new VirtStream(Package, Offset, Length);
                 Entries[i].Content = Stream;
             }
 
             return Entries;
         }
 
-        public static void Save(Stream Output, Entry[] Content, bool BigEnddian, bool SteamVer, bool CloseStreams = true) {
-            StructWriter Writer = new StructWriter(Output, BigEnddian);
-            Writer.Write(0x656D616E656C6946u);//"Filename"
+        public static void Save(Stream Output, Entry[] Content, bool BigEndian, bool SteamVer, bool CloseStreams = true)
+        {
+            uint HeaderSize = (SteamVer ? ExNameSize : NameSize) + 4;
 
-            if (SteamVer)
-                Writer.Write(0x20202020);
+            StructWriter Writer = new StructWriter(Output, BigEndian);
+            object Section = SteamVer ? (object)new SteamSection() : new Section();
+            ((dynamic)Section).Name = SteamVer ? "Filename    " : "Filename";
+            ((dynamic)Section).Event = new FieldInvoke(SectionEvent);
 
-            Writer.Write(0);//Section Length
-
-            long BasePos = (uint)Content.LongLength * 4;
+            long BasePos = (uint)(Content.LongLength * 4);
+            List<byte> OffsetBuffer = new List<byte>((int)BasePos);
             List<byte> NameBuffer = new List<byte>();
-            foreach (Entry Entry in Content) {
-                Writer.WriteRawType(Const.UINT32, (uint)(BasePos + NameBuffer.Count));
+            foreach (Entry Entry in Content)
+            {
+                OffsetBuffer.Add((uint)(NameBuffer.Count + BasePos), BigEndian);
                 NameBuffer.AddRange(Encoding.UTF8.GetBytes(Entry.Filename + "\x0"));
             }
 
-            Writer.Write(NameBuffer.ToArray(), 0, NameBuffer.Count);
+            ((dynamic)Section).Data = OffsetBuffer.Concat(NameBuffer).ToArray();
 
-            long Pos = Writer.BaseStream.Position;
-            Writer.Seek(SteamVer ? 12 : 8, 0);
-            Writer.WriteRawType(Const.UINT32, (uint)Pos);
-            Writer.Seek(Pos, 0);
+            Writer.WriteStruct(SteamVer ? typeof(SteamSection) : typeof(Section), ref Section);
 
-
-            while (Writer.BaseStream.Position % (SteamVer ? 0x10 : 4) != 0)
+            while (Writer.BaseStream.Position % (SteamVer ? 8 : 4) != 0)
                 Writer.Write((byte)0x00);
 
             long PackStart = Writer.BaseStream.Position;
-            Writer.Write(0x202020206B636150u);//"Pack    "
-            if (SteamVer)
-                Writer.Write(0x20202020);
+            ((dynamic)Section).Name = SteamVer ? "Pack        " : "Pack    ";
 
-            Pos = Writer.BaseStream.Position;
-            Writer.Write(0);//Section Length
+            List<byte> OffsetTable = new List<byte>();
 
-            Writer.WriteRawType(Const.UINT32, (uint)Content.LongLength);
+            OffsetTable.Add(Content.Length, BigEndian);
 
-            BasePos = Writer.BaseStream.Position + (Content.LongLength * 8);
-            while (BasePos % 0x100 != 0)
+            BasePos = PackStart + HeaderSize + 4 + (Content.Length * 8);
+
+            while (BasePos % (SteamVer ? 8 : 0x100) != 0)
                 BasePos++;
 
-            foreach (Entry Entry in Content) {
-                Writer.WriteRawType(Const.UINT32, (uint)BasePos);
-                Writer.WriteRawType(Const.UINT32, (uint)Entry.Content.Length);
+            foreach (Entry Entry in Content)
+            {
+                OffsetTable.Add((uint)BasePos, BigEndian);
+                OffsetTable.Add((uint)Entry.Content.Length, BigEndian);
                 BasePos += Entry.Content.Length;
-                while (BasePos % 0x100 != 0)
+
+                while (!SteamVer && BasePos % 0x100 != 0)
                     BasePos++;
             }
 
-            long Pos2 = Writer.BaseStream.Position;
-            Writer.Seek(Pos, 0);
-            Writer.WriteRawType(Const.UINT32, (uint)(Pos2 - PackStart));
-            Writer.Seek(Pos2, 0);
+            ((dynamic)Section).Data = OffsetTable.ToArray();
+            Writer.WriteStruct(SteamVer ? typeof(SteamSection) : typeof(Section), ref Section);
 
-            foreach (Entry Entry in Content) {
-                while (Writer.BaseStream.Position % 0x100 != 0)
-                    Writer.Write((byte)0x00);
 
-                Entry.Content.CopyTo(Writer.BaseStream);
-                if (CloseStreams)
-                    Entry.Content.Close();
+            while (Writer.BaseStream.Position % (SteamVer ? 8 : 0x100) != 0)
+                Writer.Write((byte)0);
+
+
+            Writer.Flush();
+
+
+            foreach (Entry Entry in Content)
+            {
+                Entry.Content.Position = 0;
+                Entry.Content.CopyTo(Output);
+
+                while (!SteamVer && Output.Position % 0x100 != 0)
+                    Output.WriteByte(0);
             }
+
+            while (SteamVer && Output.Position % 0x10 != 0)
+                Output.WriteByte(0);
 
             Writer.Close();
             Output?.Close();
         }
 
-        private static string GetStringAt(byte[] Data, uint At) {
+        private unsafe static uint GetDWAt(byte[] Buffer, uint At, bool BigEndian)
+        {
+            fixed (void* Addr = &Buffer[0])
+            {
+                uint* dAddr = (uint*)Addr;
+                uint DW = *(dAddr + At);
+                if (BigEndian)
+                {
+                    byte[] tmp = BitConverter.GetBytes(DW);
+                    Array.Reverse(tmp);
+                    fixed (void* tAddr = &tmp[0])
+                    {
+                        DW = *(uint*)tAddr;
+                    }
+                }
+                return DW;
+            }
+        }
+
+        private static dynamic SectionEvent(Stream Stream, bool FromReader, bool BigEndian, dynamic This)
+        {
+            if (FromReader)
+            {
+                This.Data = new byte[This.Length - This.Name.Length - 4];
+                Stream.Read(This.Data, 0, This.Data.Length);
+            }
+            else
+            {
+                Stream.Seek(-4, SeekOrigin.Current);
+                var Buffer = BitConverter.GetBytes(This.Data.Length + This.Name.Length + 4);
+                if (BigEndian)
+                    Array.Reverse(Buffer);
+                Stream.Write(Buffer, 0, 4);
+                Stream.Write(This.Data, 0, This.Data.Length);
+            }
+            return This;
+        }
+
+        private static string GetStringAt(byte[] Data, uint At)
+        {
             List<byte> Buffer = new List<byte>();
             while (Data[At + Buffer.Count] != 0x00)
                 Buffer.Add(Data[At + Buffer.Count]);
@@ -158,40 +200,70 @@ namespace AquaPlusEditor
         }
     }
 
+    static class Extensions
+    {
+        public static void Add(this List<byte> Buffer, uint Value, bool BigEndian)
+        {
+            byte[] Data = BitConverter.GetBytes(Value);
+            if (BigEndian)
+                Array.Reverse(Data, 0, Data.Length);
+            Buffer.AddRange(Data);
+        }
 
-    internal struct Section {
-        public byte[] Data;
-
-        public uint this[uint ID, bool BigEnd] { get {
-                byte[] Arr = new byte[4];
-
-                for (uint i = 0; i < Arr.Length; i++)
-                    Arr[i] = Data[i + (ID * 4)];
-
-                if (BigEnd)
-                    Arr = Arr.Reverse().ToArray();
-
-                return BitConverter.ToUInt32(Arr, 0);
-            }
-            set {
-                uint Index = ID * 4;
-                if (Index + 4 > Data.Length) {
-                    byte[] tmp = new byte[Index + 4];
-                    Data.CopyTo(tmp, 0);
-                    Data = tmp;
-                }
-
-                byte[] DW = BitConverter.GetBytes(ID);
-                if (BigEnd)
-                    DW = DW.Reverse().ToArray();
-
-                for (uint i = 0; i < DW.Length; i++)
-                    Data[Index + i] = DW[i];
-            }
-
+        public static void Add(this List<byte> Buffer, int Value, bool BigEndian)
+        {
+            byte[] Data = BitConverter.GetBytes(Value);
+            if (BigEndian)
+                Array.Reverse(Data, 0, Data.Length);
+            Buffer.AddRange(Data);
         }
     }
-    public struct Entry {
+
+    public struct Section
+    {
+        [FString(Length = 8)]
+        public string Name;
+
+        public uint Length;
+
+        public Section(string Name = null)
+        {
+            this.Name = Name ?? string.Empty;
+            Length = 0;
+            Data = new byte[0];
+            Event = null;
+        }
+
+        public FieldInvoke Event;
+
+        [Ignore]
+        public byte[] Data;
+    }
+
+
+    public struct SteamSection
+    {
+        [FString(Length = 12)]
+        public string Name;
+
+        public uint Length;
+
+        public SteamSection(string Name = null)
+        {
+            this.Name = Name ?? string.Empty;
+            Length = 0;
+            Data = new byte[0];
+            Event = null;
+        }
+
+        public FieldInvoke Event;
+
+        [Ignore]
+        public byte[] Data;
+    }
+
+    public struct Entry
+    {
         public string Filename;
         public Stream Content;
     }
