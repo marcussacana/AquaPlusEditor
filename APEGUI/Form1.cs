@@ -171,6 +171,8 @@ namespace APEGUI {
             Stream Output = new StreamWriter(sfd.FileName).BaseStream;
             Texture.Encode(Image.FromFile(pfd.FileName) as Bitmap, Output, true);
             Text.Close();
+
+            MessageBox.Show("Texture Encoded");
         }
 
         private void untilerToolStripMenuItem_Click(object sender, EventArgs e) {

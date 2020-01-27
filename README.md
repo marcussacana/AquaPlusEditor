@@ -1,6 +1,6 @@
 
 
-## AquaPlusEditor - v2.0
+## AquaPlusEditor - v2.1
 [![Build Status](https://travis-ci.org/ForumHulp/pageaddon.svg?branch=master)](http://vnx.uvnworks.com)
 
 
@@ -18,10 +18,8 @@ You don't need Encrypt the .sdat after decrypted, the game can read without encr
 
 The FNT is unstable, I think will works only with the Utawarerumono: Itsuwari no Kamen
 
-To the Steam version load the font from the FNT file, you need patch the executable, See [Executable Patches](#executable-patches)
-
-This tool can't edit the .tex files from the Steam version  
-(LZ77 Algorithm outdated, if someone give-me a complete implementation of the LZ77 in C# I can add support)
+To the Steam version load the font from the FNT file, you need patch the executable, See [Executable Patches](#executable-patches)  
+You can need edit the Font.tex inside the Data\ENG\Texture\Font.tex too.
 
 ## Executable Patches:
 
