@@ -400,7 +400,7 @@ namespace AquaPlusEditor {
                 }
 
                 if (BitCount != 0) 
-                    Flags.Add((byte)(CurrentFlag << 7 - BitCount));
+                    Flags.Add(CurrentFlag);
             }
 
             using (MemoryStream Output = new MemoryStream()) 

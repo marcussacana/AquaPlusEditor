@@ -29,12 +29,14 @@ You can need edit the Font.tex inside the Data\ENG\Texture\Font.tex too.
 ---
 **Utawarerumono - Mask of Deception [Steam]** (**1149550**):
 
-- *Allways use FNT font*: **0xB6206** (Default: **0x74**, **0xEB**)
+- *Allways use FNT font*: **0xB6206** (Default: **0x74**, **0xEB**)  
+- *Allways Half-Width Draw*: **0xB6DFB** (Default: **0x7706**, *0x9090*)
 
 ---
 **Utawarerumono - Mask of Truth [Steam]** (**1151440**):
 
-- *Allways use FNT font*: **0xD73BD** (Default: **0x74**, **0xEB**)
+- *Allways use FNT font*: **0xD73BD** (Default: **0x74**, **0xEB**)  
+- *Allways Half-Width Draw*: **0xD7FB2** (Default: **0x7706**, *0x9090*)
 
 ---
 
