@@ -160,8 +160,8 @@ namespace AquaPlusEditor {
 
 
 
-                Glyphs[i].X = Glyphs[i].RealX / Texture.Width;
-                Glyphs[i].Y = Glyphs[i].RealY / Texture.Height;
+                Glyphs[i].X = (float)Glyphs[i].RealX / Texture.Width;
+                Glyphs[i].Y = (float)Glyphs[i].RealY / Texture.Height;
                 
                 Writer.WriteStruct(ref Glyphs[i]);
             }
