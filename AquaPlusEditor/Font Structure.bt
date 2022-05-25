@@ -1,0 +1,63 @@
+//------------------------------------------------
+//--- 010 Editor v12.0.1 Binary Template
+//
+//      File: Aqua Plus Font Structure
+//   Authors: Marcussacana
+//   Version: v0.1
+// File Mask: *.fnt
+//  ID Bytes: 5461626C65202020
+//------------------------------------------------
+typedef struct {
+    char UTF8[4];
+    float X;//Multiply by the Font Width to get the real value
+    float Y;//Multiply by the Font Height to get the real value
+} Entry <read=CharRead>;
+
+typedef struct {
+    char TableHeader[12];
+
+    int32 TableSize;
+
+    int32 FontSize;
+
+    int32 EntryCount;
+
+    Entry Entries[EntryCount];
+
+    int Padding;
+
+    char TextureHeader[12];
+
+    int32 TextureSectionSize;
+
+    int32 UnkA;
+    int32 UnkB;
+
+    int32 TexSize;
+
+    uint16 Width;
+    uint16 Height;
+
+    ubyte TexData[TexSize];
+} Header;
+
+string CharRead(Entry &Data){
+    int Len = Strlen(Data.UTF8);
+    char tmp[Len];
+
+    int i = 0;
+    for (i = 0; i < Len; i++){
+       tmp[i] = Data.UTF8[i];
+    }
+
+    i = 0;
+
+    char end[Len];
+    for (i = 0; i < Len; i++){
+       end[i] = tmp[(Len - i)-1];
+    }
+
+    return end;
+}
+
+Header Info;

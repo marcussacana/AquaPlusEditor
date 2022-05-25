@@ -1,17 +1,15 @@
 ﻿using AquaPlusEditor;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Windows.Forms;
 
-namespace APEGUI {
+namespace APEGUI
+{
     public partial class Form2 : Form {
         public Form2() {
             InitializeComponent();
@@ -29,6 +27,7 @@ namespace APEGUI {
             Stream Stream = new StreamReader(fd.FileName).BaseStream;
             Font = new FNT(Stream);
             Glyphs = Font.GetGlyphs();
+            textBox5.Text = Font.FontSize.ToString();
             textBox4.Text = (FontSize - (FontSize/8)) + ",0";
             PreviewText();
         }
@@ -204,6 +203,49 @@ namespace APEGUI {
                 Font.UpdatedGlyphs(Glyphs, Output, true);
             }
             MessageBox.Show("Saved");
+        }
+
+        private void button4_Click(object sender, EventArgs e)
+        {
+            int NewSize = 0;
+            if (!int.TryParse(textBox5.Text, out NewSize))
+            {
+                MessageBox.Show("Invalid Size");
+                return;
+            }
+
+            int CharsPerLine = (Font.FontWidth / (int)Font.FontSize);
+            int TotalLines = (Glyphs.Length / (CharsPerLine - 1));
+
+            Font.Texture.Dispose();
+
+            Font.Texture = new Bitmap(CharsPerLine * NewSize, TotalLines * NewSize);
+
+
+            for (int i = 0; i < Glyphs.Length; i++)
+            {
+
+                int CharX = (i % CharsPerLine) * NewSize;
+                int CharY = (i / CharsPerLine) * NewSize;
+
+                Bitmap NewChar = new Bitmap(NewSize, NewSize);
+                using (Graphics g = Graphics.FromImage(NewChar))
+                {
+                    g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                    g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                    g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+
+                    g.DrawImage(Glyphs[i].Texture, new Rectangle(Point.Empty, NewChar.Size));
+                    g.Flush();
+                }
+
+                Glyphs[i].Texture.Dispose();
+                Glyphs[i].Texture = NewChar;
+                Glyphs[i].RealX = CharX;
+                Glyphs[i].RealY = CharY;
+            }
+
+            Font.FontSize = (uint)NewSize;
         }
     }
 }

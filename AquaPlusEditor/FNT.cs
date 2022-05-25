@@ -13,14 +13,18 @@ namespace AquaPlusEditor {
     public unsafe class FNT {
 
         long TexturePos = 0;
-        uint FontSize = 0;
         bool? BigEnddian = null;
         bool? SteamVer = null;
 
         uint HeaderNameSize => (SteamVer == true ? 12u : 8u);
 
         Stream Font;
-        Bitmap Texture;
+        
+        public Bitmap Texture;
+        
+        public uint FontSize = 0;
+        public int FontWidth => Texture.Width;
+        public int FontHeight => Texture.Height;
         public FNT(Stream Font) => this.Font = Font;
         public FNT(Stream Font, bool BigEnddian) {
             this.BigEnddian = BigEnddian;
@@ -50,6 +54,7 @@ namespace AquaPlusEditor {
                 else
                     BigEnddian = false;
             }
+            
             Font.Seek(0,0);
             StructReader Reader = new StructReader(Font, (bool)BigEnddian);
             Reader.Seek(HeaderNameSize + 4, 0);
@@ -58,25 +63,17 @@ namespace AquaPlusEditor {
 
             for (uint i = 0; i < Glyphs.LongLength; i++) {
                 Glyph Glyph = new Glyph();
-                byte[] Buffer = new byte[4];
-                Reader.Read(Buffer, 0, Buffer.Length);
-                if (!(bool)BigEnddian)
-                    Array.Reverse(Buffer);
-                List<byte> Buff = new List<byte>();
-                for (int x = 0, y = 0; x < Buffer.Length; x++) {
-                    if (y == 0) {
-                        if (Buffer[x] == 0x00)
-                            continue;
-                        else
-                            y = 1;
-                    }
-                    Buff.Add(Buffer[x]);
-                }
 
-                Glyph.Char = Encoding.UTF8.GetChars(Buff.ToArray()).First();
+                Reader.ReadStruct(ref Glyph);
+                
+                var Buffer = BitConverter.GetBytes(Glyph.UTF8).TakeWhile(x => x != 0);
+
+                if (!(bool)BigEnddian)
+                    Buffer = Buffer.Reverse();
+                
+                Glyph.Char = Encoding.UTF8.GetChars(Buffer.ToArray()).First();
 
                 Glyphs[i] = Glyph;
-                Reader.Seek(0x8, SeekOrigin.Current);//X and Y of the char in the texture, But isn't needed, ignoring...
             }
 
             Reader.Seek(HeaderNameSize, 0);
@@ -112,16 +109,19 @@ namespace AquaPlusEditor {
             }
             else Texture = new Bitmap(Stream);
 
+            
+            for (int i = 0; i < Glyphs.Length; i++)
+            {
+                Glyphs[i].RealX = (int)Math.Round(Glyphs[i].X * Texture.Width);
+                Glyphs[i].RealY = (int)Math.Round(Glyphs[i].Y * Texture.Height);
+            }
 
-            int CharPerLine = (int)(Texture.Width / FontSize);
             for (uint i = 0; i < Glyphs.LongLength; i++)
             {
                 Glyphs[i].Texture = new Bitmap((int)FontSize, (int)FontSize);
 
-                int X = (int)((i % CharPerLine) * FontSize);
-                int Y = (int)((i / CharPerLine) * FontSize);
-                if (Y >= Texture.Height)
-                    continue;
+                int X = Glyphs[i].RealX;
+                int Y = Glyphs[i].RealY;
 
                 for (int x = 0; x < FontSize; x++)
                     for (int y = 0; y < FontSize; y++)
@@ -135,22 +135,38 @@ namespace AquaPlusEditor {
             return Glyphs;
         }
 
-        public void UpdatedGlyphs(Glyph[] Glyphs, Stream Output, bool CloseStream = true) {
+        public void UpdatedGlyphs(Glyph[] Glyphs, Stream Output, bool CloseStream = true)
+        {
             Font.Seek(0, 0);
-            CopyBytes(Font, Output, HeaderNameSize + 12);
+            CopyBytes(Font, Output, HeaderNameSize + 4);
+
+            byte[] DW = BitConverter.GetBytes(FontSize).Concat(BitConverter.GetBytes(Glyphs.Length)).ToArray();
+            Output.Write(DW, 0, DW.Length);
+
+            
+            StructWriter Writer = new StructWriter(Output, (bool)BigEnddian);
 
             Bitmap Texture = this.Texture.Clone(new Rectangle(Point.Empty, new Size(this.Texture.Width, this.Texture.Height)), PixelFormat.Format32bppArgb);
 
-            foreach (Glyph Glyph in Glyphs) {
-                byte[] Buff = Encoding.UTF8.GetBytes(Glyph.Char.ToString());
+            for (int i = 0; i < Glyphs.Length; i++){
+                
+                byte[] Buff = Encoding.UTF8.GetBytes(Glyphs[i].Char.ToString());
                 Buff = new byte[4 - Buff.Length].Concat(Buff).ToArray();
+                
                 if (!(bool)BigEnddian)
                     Buff = Buff.Reverse().ToArray();
 
-                Output.Write(Buff, 0, Buff.Length);
-                Font.Seek(4, SeekOrigin.Current);
-                CopyBytes(Font, Output, 0x8);
+                Glyphs[i].UTF8 = BitConverter.ToUInt32(Buff, 0);
+
+
+
+                Glyphs[i].X = Glyphs[i].RealX / Texture.Width;
+                Glyphs[i].Y = Glyphs[i].RealY / Texture.Height;
+                
+                Writer.WriteStruct(ref Glyphs[i]);
             }
+
+            Writer.Flush();
 
             if (SteamVer.Value) {
                 Output.WriteByte(0);
@@ -160,13 +176,13 @@ namespace AquaPlusEditor {
 
             long NewTextPos = Output.Position;
 
-            int CharPerLine = (int)(Texture.Width / FontSize);
             for (int i = 0; i < Glyphs.LongLength; i++)
             {
-                int X = (int)((i % CharPerLine) * FontSize);
-                int Y = (int)((i / CharPerLine) * FontSize);
-
                 var Glyph = Glyphs[i];
+                
+                int X = Glyph.RealX;
+                int Y = Glyph.RealY;
+
 
                 for (int x = 0; x < FontSize; x++)
                     for (int y = 0; y < FontSize; y++)
@@ -184,7 +200,13 @@ namespace AquaPlusEditor {
             if (SteamVer.Value)
             {
                 Font.Seek(TexturePos, 0);
-                CopyBytes(Font, TextData, TexHeaderSize);
+                CopyBytes(Font, TextData, TexHeaderSize - 8);
+
+                DW = BitConverter.GetBytes(Texture.Height * Texture.Width * 4).ToArray();
+                TextData.Write(DW, 0, DW.Length);
+
+                DW = BitConverter.GetBytes((ushort)Texture.Width).Concat(BitConverter.GetBytes((ushort)Texture.Height)).ToArray();
+                TextData.Write(DW, 0, DW.Length);
 
                 BinaryWriter pWriter = new BinaryWriter(TextData);
                 for (int y = 0; y < Texture.Height; y++)
@@ -195,10 +217,23 @@ namespace AquaPlusEditor {
             }
             else
             {
-                long Reaming = (Font.Position - TexturePos) + 0x1CL;
+                long Reaming = (Font.Position - TexturePos) + 0x1CL - 8;
                 CopyBytes(Font, Output, Reaming);
 
                 Texture.Save(TextData, ImageFormat.Png);
+
+                DW = BitConverter.GetBytes(TextData.Length).ToArray();
+                Output.Write(DW, 0, DW.Length);
+
+                
+                //Maybe the code is working, but require check, if the PS3/PSV ver has the Width/Height in the header
+                //since the texture is an png, while Steam ver is RGBA
+                //if don't have width/height remove the - 8 in the reaming and put -4 as well
+                throw new NotImplementedException();
+
+                
+                DW = BitConverter.GetBytes((ushort)Texture.Width).Concat(BitConverter.GetBytes((ushort)Texture.Height)).ToArray();
+                Output.Write(DW, 0, DW.Length);
             }
 
             TextData.Seek(0, 0);
@@ -208,7 +243,7 @@ namespace AquaPlusEditor {
             while (SecLen % (SteamVer.Value ? 0x10 : 0x4) != 0)
                 SecLen++;
 
-            StructWriter Writer = new StructWriter(Output, (bool)BigEnddian);
+            
             while (Writer.BaseStream.Position % (SteamVer.Value ? 0x10 : 0x4) != 0)
                 Writer.Write((byte)0x00);
 
@@ -243,17 +278,24 @@ namespace AquaPlusEditor {
             From.Read(Buff, 0, Buff.Length);
             To.Write(Buff, 0, Buff.Length);
         }
-
-        static void ChangeProtection(int* Address, uint Size, uint Protection) {
-            VirtualProtectEx(System.Diagnostics.Process.GetCurrentProcess().Handle, Address, Size, Protection, out _);
-        }
-        [DllImport("kernel32.dll")]
-        unsafe static extern bool VirtualProtectEx(IntPtr hProcess, int* lpAddress, uint dwSize, uint flNewProtect, out uint lpflOldProtect);
     }
 
 
-    public struct Glyph {
+    public struct Glyph
+    {
+        public uint UTF8;
+        public float X;
+        public float Y;
+
+        [Ignore]
+        public int RealX;
+        [Ignore]
+        public int RealY;
+        
+        [Ignore]
         public char Char;
+        
+        [Ignore]
         public Bitmap Texture;
     }
 }

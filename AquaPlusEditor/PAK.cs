@@ -221,7 +221,7 @@ namespace AquaPlusEditor
 
     public struct Section
     {
-        [FString(Length = 8)]
+        [FString(8)]
         public string Name;
 
         public uint Length;
@@ -243,7 +243,7 @@ namespace AquaPlusEditor
 
     public struct SteamSection
     {
-        [FString(Length = 12)]
+        [FString(12)]
         public string Name;
 
         public uint Length;
