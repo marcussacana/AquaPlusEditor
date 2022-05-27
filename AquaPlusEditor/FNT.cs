@@ -146,7 +146,7 @@ namespace AquaPlusEditor {
             
             StructWriter Writer = new StructWriter(Output, (bool)BigEnddian);
 
-            Bitmap Texture = this.Texture.Clone(new Rectangle(Point.Empty, new Size(this.Texture.Width, this.Texture.Height)), PixelFormat.Format32bppArgb);
+            Bitmap Texture = new Bitmap((int)this.Texture.Width, (int)this.Texture.Height, PixelFormat.Format32bppArgb);
 
             for (int i = 0; i < Glyphs.Length; i++){
                 
@@ -179,7 +179,7 @@ namespace AquaPlusEditor {
             for (int i = 0; i < Glyphs.LongLength; i++)
             {
                 var Glyph = Glyphs[i];
-                
+
                 int X = Glyph.RealX;
                 int Y = Glyph.RealY;
 
