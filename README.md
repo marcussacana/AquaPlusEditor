@@ -29,10 +29,16 @@ You can need edit the Font.tex inside the Data\ENG\Texture\Font.tex too.
 ---
 **Utawarerumono - Mask of Deception [Steam]** (**1149550**):
 
-- *Allways use FNT font*: **0xB6206** (Default: **0x74**, **0xEB**)  
-- *Allways Half-Width Draw*: **0xB6DFB** (Default: **0x7706**, **0x9090**)
 
-- *28px Half-Width Character*: **0x500410** (Default: **0x3F000000**, **0x3EE00000**) (Break the game, only for debug)
+- [v1] *Allways use FNT font*: **0xB6206** (Default: **0x74**, **0xEB**)  
+- [v1] *Allways Half-Width Draw*: **0xB6DFB** (Default: **0x7706**, **0x9090**)
+
+- [v1] *28px Half-Width Character*: **0x500410** (Default: **0x3F000000**, **0x3EE00000**) (Break the game, only for debug)
+
+- [v2] *Allways use FNT font*: **0xB78F8** (Default: **0x74**, **0xEB**)  
+- [v2] *Allways Half-Width Draw*: **0xB84ED** (Default: **0x7706**, **0x9090**)
+
+- [v1] *28px Half-Width Character*: **0x500410** (Default: **0x3F000000**, **0x3EE00000**) (Break the game, only for debug)
 
 ---
 **Utawarerumono - Mask of Truth [Steam]** (**1151440**):
@@ -54,7 +60,9 @@ With custom FNT:
 ## Resize the Font
 After resize the font, you must update the hardcoded float point to match with your font size.  
 This can be found near where the game select the full width/half width spacing.  
-Assembly form: (0xb6df8 in Mask of Deception [Steam])  
+Assembly form: 
+- 0xb6df8 in Mask of Deception [Steam v1]
+- 0xb84ea in Mask of Deception [Steam v2]
 ![image](https://user-images.githubusercontent.com/10576957/170355606-61a7204d-45db-42d6-ae7c-ebd2e2498f25.png)  
 If you modify this code to be like this:  
 ![image](https://user-images.githubusercontent.com/10576957/170356696-8a4c008f-217e-421d-988f-5080e292196e.png)  
