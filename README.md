@@ -38,7 +38,7 @@ You can need edit the Font.tex inside the Data\ENG\Texture\Font.tex too.
 - [v2] *Allways use FNT font*: **0xB78F8** (Default: **0x74**, **0xEB**)  
 - [v2] *Allways Half-Width Draw*: **0xB84ED** (Default: **0x7706**, **0x9090**)
 
-- [v1] *28px Half-Width Character*: **0x500410** (Default: **0x3F000000**, **0x3EE00000**) (Break the game, only for debug)
+- [v2] *28px Half-Width Character*: **0x502330** (Default: **0x3F000000**, **0x3EE00000**) (Break the game, only for debug)
 
 ---
 **Utawarerumono - Mask of Truth [Steam]** (**1151440**):
