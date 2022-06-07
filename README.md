@@ -97,4 +97,5 @@ And we are changing the original space size by 6/10 his original size, you can j
 and this will be the final result:  
 ![image](https://user-images.githubusercontent.com/10576957/172343484-6b32e4c3-b396-4ede-927f-8422502cc876.png)  
 Space for more 2 line :), well, but to me only one line is enought since the font size is already reduced.  
+And notice that will broke some menus, like the save one. I have no time to fix it now, since it will require debugging and It's hard to debug windows games under linux :/   
 Good lucky with your translation.
