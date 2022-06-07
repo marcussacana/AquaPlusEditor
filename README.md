@@ -70,3 +70,31 @@ Where 0x3ECCCCCD is 0.4f
 this will force the game use less space for each character and allow in the case of Mask of Deception [Steam]  
 put up 49 characters per line instead the default 39 character per lines. This can help a lot your translation.
 ![image](https://user-images.githubusercontent.com/10576957/170357116-b011cad0-4664-45be-a530-190338ab4597.png)
+
+
+## Reduce Space Between lines
+By default utawarerumono only has space for 3 lines per dialog, and this is basically thanks to the empty space the game leaves between each line  
+![image](https://user-images.githubusercontent.com/10576957/172342738-838eaa68-4d54-4de9-95aa-4aa46c232908.png)  
+We can solved that by patching at 0xB79E7 (Deception Steam v2)  
+![image](https://user-images.githubusercontent.com/10576957/172341333-6685fca0-1e1b-4045-8a7b-f4db13557f40.png)  
+Where xmm0 is the space between the lines, so, basically, we just need decrease that value a bit.  
+but there has no enought space to put instructions, so, you will need create a new section in the game executable and jump to that section from the `movss [..], xmm0`.
+Now, with a small code like this:  
+```asm
+@LineSpaceMod:
+call @EIP
+@EIP:
+pop ECX
+
+mulss xmm0, dword ptr [ECX+0x11]
+movss dword ptr ss:[esp+0x24], xmm0
+jmp SpaceModRet ; jmp to the instruction after the movss [...], xmm0
+@DW:
+	dd 0x3F19999A ; = 0.6f
+```
+Notice that we are replacing the ECX register in this code, but after this code the game discard this register, then if you use in another version of the game you must ensure if you can use this register.
+And we are changing the original space size by 6/10 his original size, you can just update that `dd` value to match with your font size.
+and this will be the final result:  
+![image](https://user-images.githubusercontent.com/10576957/172343484-6b32e4c3-b396-4ede-927f-8422502cc876.png)  
+Space for more 2 line :), well, but to me only one line is enought since the font size is already reduced.  
+Good lucky with your translation.
