@@ -43,8 +43,9 @@ You can need edit the Font.tex inside the Data\ENG\Texture\Font.tex too.
 ---
 **Utawarerumono - Mask of Truth [Steam]** (**1151440**):
 
-- *Allways use FNT font*: **0xD73BD** (Default: **0x74**, **0xEB**)  
-- *Allways Half-Width Draw*: **0xD7FB2** (Default: **0x7706**, **0x9090**)
+- [v1] *Allways use FNT font*: **0xD73BD** (Default: **0x74**, **0xEB**)  
+- [v1] *Allways Half-Width Draw*: **0xD7FB2** (Default: **0x7706**, **0x9090**)
+- [v2] *Allways use FNT font*: **0xD8D5F** (Default: **0x74**, **0xEB**)  
 
 ---
 ## Screenshot:
@@ -61,21 +62,22 @@ With custom FNT:
 After resize the font, you must update the hardcoded float point to match with your font size.  
 This can be found near where the game select the full width/half width spacing.  
 Assembly form: 
-- 0xb6df8 in Mask of Deception [Steam v1]
-- 0xb84ea in Mask of Deception [Steam v2]
+- 0xb6df8 in Mask of Deception [Steam v1]  
+- 0xb84ea in Mask of Deception [Steam v2]  
+- 0xd9951 in Mask of Truth [Steam v2]  
 ![image](https://user-images.githubusercontent.com/10576957/170355606-61a7204d-45db-42d6-ae7c-ebd2e2498f25.png)  
 If you modify this code to be like this:  
 ![image](https://user-images.githubusercontent.com/10576957/170356696-8a4c008f-217e-421d-988f-5080e292196e.png)  
 Where 0x3ECCCCCD is 0.4f  
 this will force the game use less space for each character and allow in the case of Mask of Deception [Steam]  
-put up 49 characters per line instead the default 39 character per lines. This can help a lot your translation.
-![image](https://user-images.githubusercontent.com/10576957/170357116-b011cad0-4664-45be-a530-190338ab4597.png)
+put up 49 characters per line instead the default 39 character per lines. This can help a lot your translation.  
+![image](https://user-images.githubusercontent.com/10576957/170357116-b011cad0-4664-45be-a530-190338ab4597.png)  
 
 
 ## Reduce Space Between lines
 By default utawarerumono only has space for 3 lines per dialog, and this is basically thanks to the empty space the game leaves between each line  
 ![image](https://user-images.githubusercontent.com/10576957/172342738-838eaa68-4d54-4de9-95aa-4aa46c232908.png)  
-We can solved that by patching at 0xB79E7 (Deception Steam v2)  
+We can solved that by patching at 0xB79E7 (Deception Steam v2) or 0xD8E4E (Truth Steam v2)  
 ![image](https://user-images.githubusercontent.com/10576957/172341333-6685fca0-1e1b-4045-8a7b-f4db13557f40.png)  
 Where xmm0 is the space between the lines, so, basically, we just need decrease that value a bit.  
 but there has no enought space to put instructions, so, you will need create a new section in the game executable and jump to that section from the `movss [..], xmm0`.
