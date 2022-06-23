@@ -58,13 +58,20 @@ namespace AquaPlusEditor {
                         continue;
 
                     if (StrStart == Script.Length)
+                    {
+                        if (Offset + 1 >= Script.Length || !IsUTF8(Script[Offset]) || !IsUTF8(Script[Offset + 1]))
+                            continue;
+                        
                         StrStart = Offset;
+                    }
                     else /*if (Offset + 50 >= StrStart) // hacky
                         StrStart = Offset;
-                    else*/ {
-                        byte Prefix = Script[Offset];
+                    else*/ 
+                    if (Offset + 1 < Script.Length){
+                        byte CharA = Script[Offset];
+                        byte CharB = Script[Offset + 1];
                         //https://en.wikipedia.org/wiki/UTF-8
-                        if ((Prefix >> 4 == 0xE && ((Prefix & 0xF) >= 0x3 && (Prefix & 0xF) <= 8)) || Prefix == 0xC3 || (Prefix >= 0x41 && Prefix <= 0x7A)) {
+                        if (IsUTF8(CharA) && IsUTF8(CharB)) {
                             StrStart = Offset;
                         } else
                             continue;
@@ -81,6 +88,11 @@ namespace AquaPlusEditor {
             }
 
             return Strings.ToArray();
+        }
+
+        bool IsUTF8(byte Byte)
+        {
+            return Byte >> 4 == 0xE && ((Byte & 0xF) >= 0x3 && (Byte & 0xF) <= 8) || Byte == 0xC3 || (Byte >= 0x41 && Byte <= 0x7A);
         }
 
         public byte[] Export(string[] Strings) {
