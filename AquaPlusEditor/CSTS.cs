@@ -62,7 +62,7 @@ namespace AquaPlusEditor {
                 if (Offset < i)
                     continue;
                 if (StrStart != Script.Length) {
-                    if (Script[Offset - 1] != 0x00)
+                    if (Script[Offset - 1] > 0x01)
                         continue;
                 }
                 if (Script[Offset] == 0x00)
