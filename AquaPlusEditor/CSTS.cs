@@ -26,13 +26,28 @@ namespace AquaPlusEditor {
         public string[] Import() {
             OffPos = new List<uint>();
             uint StrStart = GetWritePos();
-            for (uint i = StrStart - 3; i >= 0; i--) {
+            bool StrStarted = false;
+            for (uint i = StrStart - 3; i >= 0; i--)
+            {
+                if (!StrStarted)
+                {
+                    if (!IsUTF8(Script[i]))
+                        continue;
+                    StrStarted = true;
+                }
                 ushort w = GetW(i);
                 if (w != 0x31)
                     continue;
-                if (Script[i + 5] == 0 || Script[i + 4] != 0)
+                if (Script[i + 5] != 0 && Script[i + 4] == 0)
+                {
+                    StrStart = i + 5;
                     break;
-                StrStart = i + 5;
+                }
+                if (Script[i + 2] == 0x01 && IsUTF8(Script[i + 3]))
+                {
+                    StrStart = i + 3;
+                    break;
+                }
                 break;
             }
             bool ForceTable = StrStart != Script.LongLength;
