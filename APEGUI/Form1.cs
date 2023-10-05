@@ -19,7 +19,7 @@ namespace APEGUI {
         CSTS ScriptEditor;
         private void extractToolStripMenuItem_Click(object sender, EventArgs e) {
             OpenFileDialog fd = new OpenFileDialog();
-            fd.Filter = "All *.pak packgets|*.pak;*.dat;*.sdat";
+            fd.Filter = "All *.pak packages|*.pak;*.dat;*.sdat;*.pck";
             if (fd.ShowDialog() != DialogResult.OK)
                 return;
 
@@ -35,8 +35,13 @@ namespace APEGUI {
             Entry[] Entries = PAK.Open(Packget);
 
             foreach (var File in Entries) {
-                string OP = Outdir + File.Filename;
-                Stream Output = new StreamWriter(OP.Replace('\\', Path.AltDirectorySeparatorChar)).BaseStream;
+                string OP = (Outdir + File.Filename).Replace('\\', Path.AltDirectorySeparatorChar);
+                var ODir = Path.GetDirectoryName(OP);
+
+                if (!Directory.Exists(ODir))
+                    Directory.CreateDirectory(ODir);
+
+                Stream Output = new StreamWriter(OP).BaseStream;
                 File.Content.CopyTo(Output);
                 Output.Flush();
                 Output.Close();
