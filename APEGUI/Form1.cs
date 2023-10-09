@@ -117,10 +117,14 @@ namespace APEGUI {
             bool SteamVer = MessageBox.Show("Pack in Steam version format?", "APEGUI", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
             bool BigEnddian = !SteamVer && MessageBox.Show("Pack with BigEnddian?\nYes: PS3 Format\nNo: PSV/PS4 Format", "APEGUI", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
 
+            bool HyperDevotion = false;
+            if (SteamVer)
+                HyperDevotion = (MessageBox.Show("Pack in Hyperdevotion Noire format?", "APEGUI", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes);
+
             if (!fbd.SelectedPath.EndsWith("\\"))
                 fbd.SelectedPath += '\\';
 
-            string[] Files = Directory.GetFiles(fbd.SelectedPath.Replace('\\', Path.AltDirectorySeparatorChar), "*.*");
+            string[] Files = Directory.GetFiles(fbd.SelectedPath.Replace('\\', Path.AltDirectorySeparatorChar), "*.*", SearchOption.AllDirectories);
 
             Entry[] Entries = (from x in Files orderby x
                                select new Entry() {
@@ -130,7 +134,7 @@ namespace APEGUI {
 
             Stream Output = new StreamWriter(fd.FileName).BaseStream;
 
-            PAK.Save(Output, Entries, BigEnddian, SteamVer);
+            PAK.Save(Output, Entries, BigEnddian, SteamVer, HyperDevotion);
             MessageBox.Show("Packget Saved");
         }
 

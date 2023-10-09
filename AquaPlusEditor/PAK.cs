@@ -78,9 +78,14 @@ namespace AquaPlusEditor
             return Entries;
         }
 
-        public static void Save(Stream Output, Entry[] Content, bool BigEndian, bool SteamVer, bool CloseStreams = true)
+        static int OffsetPaddingLength = 0;
+
+        public static void Save(Stream Output, Entry[] Content, bool BigEndian, bool SteamVer, bool HyperDevotion, bool CloseStreams = true)
         {
             uint HeaderSize = (SteamVer ? ExNameSize : NameSize) + 4;
+
+            if (HyperDevotion)
+                SteamVer = false;
 
             StructWriter Writer = new StructWriter(Output, BigEndian);
             object Section = SteamVer ? (object)new SteamSection() : new Section();
@@ -93,14 +98,21 @@ namespace AquaPlusEditor
             foreach (Entry Entry in Content)
             {
                 OffsetBuffer.Add((uint)(NameBuffer.Count + BasePos), BigEndian);
-                NameBuffer.AddRange(Encoding.UTF8.GetBytes(Entry.Filename + "\x0"));
+                NameBuffer.AddRange(Encoding.UTF8.GetBytes(Entry.Filename.Replace("\\", "/") + "\x0"));
             }
 
             ((dynamic)Section).Data = OffsetBuffer.Concat(NameBuffer).ToArray();
 
             Writer.WriteStruct(SteamVer ? typeof(SteamSection) : typeof(Section), ref Section);
 
-            while (Writer.BaseStream.Position % (SteamVer ? 8 : 4) != 0)
+            int SectionPadding = 0x100;
+
+            if (SteamVer)
+                SectionPadding = 8;
+
+            if (HyperDevotion)
+                SectionPadding = 4;
+            while (Writer.BaseStream.Position % SectionPadding != 0)
                 Writer.Write((byte)0x00);
 
             long PackStart = Writer.BaseStream.Position;
@@ -112,7 +124,7 @@ namespace AquaPlusEditor
 
             BasePos = PackStart + HeaderSize + 4 + (Content.Length * 8);
 
-            while (BasePos % (SteamVer ? 8 : 0x100) != 0)
+            while (BasePos % SectionPadding != 0)
                 BasePos++;
 
             foreach (Entry Entry in Content)
@@ -121,15 +133,22 @@ namespace AquaPlusEditor
                 OffsetTable.Add((uint)Entry.Content.Length, BigEndian);
                 BasePos += Entry.Content.Length;
 
-                while (!SteamVer && BasePos % 0x100 != 0)
+                while (!SteamVer && !HyperDevotion && BasePos % 0x100 != 0)
                     BasePos++;
+            }
+
+            OffsetPaddingLength = 0;
+
+            while (OffsetTable.Count % 0x8 != 0 && HyperDevotion)
+            {
+                OffsetTable.Add(0);
+                OffsetPaddingLength++;
             }
 
             ((dynamic)Section).Data = OffsetTable.ToArray();
             Writer.WriteStruct(SteamVer ? typeof(SteamSection) : typeof(Section), ref Section);
 
-
-            while (Writer.BaseStream.Position % (SteamVer ? 8 : 0x100) != 0)
+            while (Writer.BaseStream.Position % SectionPadding != 0)
                 Writer.Write((byte)0);
 
 
@@ -141,11 +160,11 @@ namespace AquaPlusEditor
                 Entry.Content.Position = 0;
                 Entry.Content.CopyTo(Output);
 
-                while (!SteamVer && Output.Position % 0x100 != 0)
+                while (!SteamVer && !HyperDevotion && Output.Position % 0x100 != 0)
                     Output.WriteByte(0);
             }
 
-            while (SteamVer && Output.Position % 0x10 != 0)
+            while (SteamVer || HyperDevotion && Output.Position % 0x10 != 0)
                 Output.WriteByte(0);
 
             Writer.Close();
@@ -181,7 +200,7 @@ namespace AquaPlusEditor
             else
             {
                 Stream.Seek(-4, SeekOrigin.Current);
-                var Buffer = BitConverter.GetBytes(This.Data.Length + This.Name.Length + 4);
+                var Buffer = BitConverter.GetBytes(This.Data.Length + This.Name.Length + 4 - OffsetPaddingLength);
                 if (BigEndian)
                     Array.Reverse(Buffer);
                 Stream.Write(Buffer, 0, 4);
